@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>¿Ser o estar? – Unidad 3</title>
+<style>
+  :root{
+    --bg:#F5F5F7; --card:#FFFFFF; --ink:#1D1D1F; --ink2:#6E6E73;
+    --verde:#34C759; --verde-soft:#E8F9EE;
+    --rojo:#FF3B30; --rojo-soft:#FFECEB;
+    --azul:#0071E3; --azul-soft:#EAF3FD;
+    --amar:#FFCC00; --amar-soft:#FFF6D9; --amar-ink:#8A6D00;
+    --radius:20px;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{height:100%}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:var(--bg); color:var(--ink);
+    display:flex; flex-direction:column; align-items:center;
+    min-height:100dvh; padding:16px;
+  }
+  .app{width:100%; max-width:440px; display:flex; flex-direction:column; gap:14px; flex:1}
+
+  header{display:flex; justify-content:space-between; align-items:center; padding:4px 2px}
+  .level-pill{background:var(--card); border-radius:999px; padding:8px 16px; font-size:15px; font-weight:600; box-shadow:0 1px 3px rgba(0,0,0,.06)}
+  .score{font-size:17px; font-weight:700; font-variant-numeric:tabular-nums}
+  .score span{color:var(--ink2); font-weight:500; font-size:13px}
+  .progress{height:6px; background:#E5E5EA; border-radius:3px; overflow:hidden}
+  .progress i{display:block; height:100%; width:0%; background:var(--amar); border-radius:3px; transition:width .35s ease}
+
+  .card{
+    background:var(--card); border-radius:var(--radius);
+    box-shadow:0 2px 12px rgba(0,0,0,.06);
+    padding:24px 20px; text-align:center;
+  }
+  .task-label{font-size:13px; color:var(--ink2); margin-bottom:10px}
+  .sentence{font-size:22px; font-weight:600; line-height:1.5; margin:8px 0}
+  .sentence .gap{display:inline-block; min-width:76px; border-bottom:2.5px solid var(--amar); color:var(--amar-ink); padding:0 4px}
+  .sentence .em{font-size:1.15em}
+  .why{
+    display:none; margin-top:10px; font-size:14px; font-weight:600;
+    color:var(--ink2); background:var(--bg); border-radius:12px; padding:8px 12px;
+  }
+  .why.show{display:inline-block}
+
+  .answers{display:flex; flex-direction:column; gap:10px}
+  .answers.row{flex-direction:row}
+  .answers.row .btn{flex:1}
+  .btn{
+    min-height:54px; border:none; border-radius:16px;
+    background:var(--card); color:var(--ink);
+    font-family:inherit; font-size:19px; font-weight:700;
+    box-shadow:0 1px 4px rgba(0,0,0,.07);
+    padding:12px 14px; cursor:pointer;
+    transition:transform .12s ease, background .2s, color .2s;
+  }
+  .btn:active{transform:scale(.97)}
+  .btn.tint-ser{background:var(--amar-soft); color:var(--amar-ink)}
+  .btn.tint-est{background:var(--azul-soft); color:var(--azul)}
+  .btn.ok{background:var(--verde); color:#fff}
+  .btn.bad{background:var(--rojo); color:#fff}
+  .btn.dim{opacity:.45}
+
+  .btn-primary{
+    min-height:54px; border:none; border-radius:999px;
+    background:var(--azul); color:#fff; font-family:inherit;
+    font-size:18px; font-weight:700; padding:14px 28px; cursor:pointer;
+    transition:transform .12s ease;
+  }
+  .btn-primary:active{transform:scale(.97)}
+
+  input[type=text]{
+    width:100%; min-height:54px; border-radius:16px; border:1.5px solid #D2D2D7;
+    font-family:inherit; font-size:18px; padding:12px 16px; text-align:center;
+    background:var(--card); color:var(--ink); outline:none;
+  }
+  input[type=text]:focus{border-color:var(--azul); box-shadow:0 0 0 3px var(--azul-soft)}
+  .hint{font-size:13.5px; color:var(--ink2); margin-top:8px; line-height:1.4}
+  .hint b.y{color:var(--amar-ink)} .hint b.b{color:var(--azul)}
+
+  .feedback{
+    min-height:52px; border-radius:16px; padding:12px 16px;
+    font-size:16px; font-weight:600; display:none; align-items:center; justify-content:center;
+    text-align:center; line-height:1.45;
+  }
+  .feedback.show{display:flex; animation:pop .3s ease}
+  .feedback.good{background:var(--verde-soft); color:#1B7A3D}
+  .feedback.bad{background:var(--rojo-soft); color:#B3261E}
+  @keyframes pop{from{transform:scale(.94);opacity:0} to{transform:scale(1);opacity:1}}
+  @media (prefers-reduced-motion:reduce){ .feedback.show{animation:none} }
+
+  .screen{flex:1; display:flex; flex-direction:column; justify-content:center; gap:16px; text-align:center; animation:pop .35s ease}
+  .screen h1{font-size:30px; font-weight:800; letter-spacing:-.5px}
+  .screen h1 .y{color:var(--amar-ink); background:var(--amar); border-radius:10px; padding:0 8px}
+  .screen h1 .b{color:#fff; background:var(--azul); border-radius:10px; padding:0 8px}
+  .screen p{font-size:17px; color:var(--ink2); line-height:1.5}
+  .lv-list{display:flex; flex-direction:column; gap:10px; text-align:left}
+  .lv-item{background:var(--card); border-radius:16px; padding:14px 16px; display:flex; gap:12px; align-items:center; box-shadow:0 1px 4px rgba(0,0,0,.06)}
+  .lv-item .n{width:34px; height:34px; border-radius:10px; background:var(--amar-soft); color:var(--amar-ink); font-weight:800; display:flex; align-items:center; justify-content:center; flex-shrink:0}
+  .lv-item div b{display:block; font-size:16px}
+  .lv-item div span{font-size:13.5px; color:var(--ink2)}
+
+  .result-bar{background:var(--card); border-radius:16px; padding:14px 16px; text-align:left; box-shadow:0 1px 4px rgba(0,0,0,.06)}
+  .result-bar b{font-size:15.5px}
+  .result-bar .track{height:8px; background:#E5E5EA; border-radius:4px; margin-top:8px; overflow:hidden}
+  .result-bar .fill{height:100%; border-radius:4px; width:0; transition:width .8s ease}
+  .tag{font-size:13px; font-weight:700; padding:3px 10px; border-radius:999px; float:right}
+  .tag.can{background:var(--verde-soft); color:#1B7A3D}
+  .tag.train{background:var(--rojo-soft); color:#B3261E}
+  .hidden{display:none !important}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- START -->
+  <section class="screen" id="start">
+    <div style="font-size:56px">⚖️</div>
+    <h1>¿<span class="y">ser</span> o <span class="b">estar</span>?</h1>
+    <p>Zwei Verben für „sein" · Unidad 3<br>3 Levels · ca. 10–12 Minuten</p>
+    <div class="lv-list">
+      <div class="lv-item"><span class="n">1</span><div><b>Sortieren</b><span>¿ser o estar? – antippen</span></div></div>
+      <div class="lv-item"><span class="n">2</span><div><b>Anwenden</b><span>die richtige Form wählen (+ hay)</span></div></div>
+      <div class="lv-item"><span class="n">3</span><div><b>Lückentext</b><span>Formen tippen – wie in der Klausur</span></div></div>
+    </div>
+    <button class="btn-primary" onclick="startGame()">Empezar</button>
+  </section>
+
+  <!-- SPIEL -->
+  <section id="game" class="hidden" style="display:flex;flex-direction:column;gap:14px;flex:1">
+    <header>
+      <span class="level-pill" id="levelPill">Level 1</span>
+      <span class="score"><span>Puntos&nbsp;</span><b id="score">0</b></span>
+    </header>
+    <div class="progress"><i id="bar"></i></div>
+
+    <div class="card" id="qcard">
+      <div class="task-label" id="taskLabel"></div>
+      <div id="qbody"></div>
+    </div>
+
+    <div class="answers" id="answers"></div>
+    <div class="feedback" id="feedback"></div>
+    <div style="text-align:center"><button class="btn-primary hidden" id="nextBtn" onclick="nextQ()">Weiter</button></div>
+  </section>
+
+  <!-- ENDE -->
+  <section class="screen hidden" id="end">
+    <div style="font-size:60px" id="endEmoji">🎉</div>
+    <h1 id="endTitle">¡Muy bien!</h1>
+    <p><b id="endScore" style="color:var(--ink);font-size:22px"></b> Punkte</p>
+    <div id="results" style="display:flex;flex-direction:column;gap:10px"></div>
+    <button class="btn-primary" onclick="location.reload()">Otra vez</button>
+  </section>
+</div>
+
+<script>
+/* ---------- Inhalte: ser vs. estar (+ hay), Wortschatz Unidad 1–3 ---------- */
+
+// Level 1: ¿ser o estar? – Zwei-Button-Entscheidung (10 P.)
+// w = Begründung (wird nach der Antwort gezeigt)
+const L1 = [
+  {s:["Lucía ", " muy simpática. 😊"], a:"ser", w:"Eigenschaft (immer so) → ser"},
+  {s:["Yo ", " en casa. 📍"], a:"estar", w:"Ort → estar"},
+  {s:["Nosotros ", " de Alemania. 🌍"], a:"ser", w:"Herkunft → ser"},
+  {s:["Marta ", " cansada. 😴"], a:"estar", w:"Gefühl (jetzt) → estar"},
+  {s:["Él ", " el hermano de Ana. 👥"], a:"ser", w:"Identität (wer?) → ser"},
+  {s:["Mis amigos ", " bailando. 💃"], a:"estar", w:"+ gerundio → estar"},
+  {s:["Vosotros ", " muy divertidos. 😄"], a:"ser", w:"Eigenschaft (immer so) → ser"},
+  {s:["¿Tú ", " nervioso? 😰"], a:"estar", w:"Gefühl (jetzt) → estar"},
+];
+
+// Level 2: richtige Form wählen, 3 Buttons, inkl. hay (10 P.)
+const L2 = [
+  {s:["Yo ", " de Colonia. 🏠"], a:"soy", o:["soy","estoy","es"]},
+  {s:["Marta ", " en el parque. 🌳"], a:"está", o:["es","está","hay"]},
+  {s:["", " un cine en mi barrio. 🎬"], a:"Hay", o:["Es","Está","Hay"]},
+  {s:["Nosotros ", " viendo la tele. 📺"], a:"estamos", o:["somos","estamos","estáis"]},
+  {s:["Mis padres ", " muy simpáticos. 😊"], a:"son", o:["son","están","hay"]},
+  {s:["¿Vosotros ", " contentos? 😊"], a:"estáis", o:["sois","estáis","están"]},
+  {s:["El libro ", " aburrido. 📖"], a:"es", o:["es","está","hay"]},
+  {s:["", " muchas tiendas en el centro. 🏪"], a:"Hay", o:["Son","Están","Hay"]},
+];
+
+// Level 3: Form tippen – Lückentext wie in der Klausur (20 P.)
+const L3 = [
+  {s:["Ella ", " Marta y ", " mi amiga."], gaps:2, sol:"Ella es Marta y es mi amiga.",
+   acc:["es|es"]},
+  {s:["Yo ", " escuchando música. 🎧"], gaps:1, sol:"Yo estoy escuchando música.",
+   acc:["estoy"]},
+  {s:["Mis amigos ", " de Madrid. 🌍"], gaps:1, sol:"Mis amigos son de Madrid.",
+   acc:["son"]},
+  {s:["¿Tú ", " cansado hoy? 😴"], gaps:1, sol:"¿Tú estás cansado hoy?",
+   acc:["estas"]},
+  {s:["En mi barrio ", " un parque. 🌳"], gaps:1, sol:"En mi barrio hay un parque.",
+   acc:["hay"]},
+  {s:["Nosotras ", " muy contentas. 😊"], gaps:1, sol:"Nosotras estamos muy contentas.",
+   acc:["estamos"]},
+];
+
+/* ---------- Logik ---------- */
+let level=1, idx=0, score=0, locked=false;
+let hits={1:0,2:0,3:0};
+const POINTS={1:10,2:10,3:20};
+const TOTAL={1:L1.length,2:L2.length,3:L3.length};
+const MAX=TOTAL[1]*10+TOTAL[2]*10+TOTAL[3]*20;
+
+const $=id=>document.getElementById(id);
+function shuffle(arr){return [...arr].sort(()=>Math.random()-.5)}
+
+function startGame(){
+  $("start").classList.add("hidden");
+  $("game").classList.remove("hidden");
+  render();
+}
+
+function gapSentence(parts){
+  let html="";
+  parts.forEach((p,i)=>{
+    html+=`<span class="em">${p}</span>`;
+    if(i<parts.length-1) html+=`<span class="gap">…</span>`;
+  });
+  return `<div class="sentence">${html}</div>`;
+}
+
+function render(){
+  locked=false;
+  $("feedback").className="feedback";
+  $("nextBtn").classList.add("hidden");
+  $("levelPill").textContent="Level "+level;
+  const done = idx + (level>1?TOTAL[1]:0) + (level>2?TOTAL[2]:0);
+  const all = TOTAL[1]+TOTAL[2]+TOTAL[3];
+  $("bar").style.width=(done/all*100)+"%";
+
+  const A=$("answers"), B=$("qbody");
+  A.innerHTML=""; B.innerHTML=""; A.className="answers";
+
+  if(level===1){
+    const q=L1[idx];
+    $("taskLabel").textContent="¿ser o estar?";
+    B.innerHTML=gapSentence(q.s)+`<span class="why" id="why">${q.w}</span>`;
+    A.className="answers row";
+    [["ser","tint-ser"],["estar","tint-est"]].forEach(([opt,cls])=>{
+      const b=document.createElement("button");
+      b.className="btn "+cls; b.textContent=opt;
+      b.onclick=()=>{ $("why").classList.add("show"); check(b, opt===q.a, q.a); };
+      A.appendChild(b);
+    });
+  }
+
+  if(level===2){
+    const q=L2[idx];
+    $("taskLabel").textContent="Welche Form passt?";
+    B.innerHTML=gapSentence(q.s);
+    A.className="answers row";
+    shuffle(q.o).forEach(opt=>{
+      const b=document.createElement("button");
+      b.className="btn"; b.textContent=opt;
+      b.onclick=()=>check(b, opt===q.a, q.s[0]+q.a+q.s[1]);
+      A.appendChild(b);
+    });
+  }
+
+  if(level===3){
+    const q=L3[idx];
+    $("taskLabel").textContent = q.gaps===2 ? "Tippe beide Formen (mit Leerzeichen dazwischen)" : "Tippe die fehlende Form";
+    B.innerHTML=gapSentence(q.s)+`
+      <input type="text" id="inp" autocomplete="off" autocapitalize="off" placeholder="${q.gaps===2?'z. B. es es':'…'}" enterkeyhint="done">
+      <div class="hint"><b class="y">ser</b>: soy · eres · es · somos · sois · son&nbsp;&nbsp;·&nbsp;&nbsp;<b class="b">estar</b>: estoy · estás · está · estamos · estáis · están&nbsp;&nbsp;·&nbsp;&nbsp;hay</div>`;
+    const b=document.createElement("button");
+    b.className="btn-primary"; b.textContent="Comprobar"; b.style.width="100%";
+    b.onclick=()=>checkText(q);
+    A.appendChild(b);
+    const inp=$("inp");
+    inp.addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();checkText(q);}});
+    setTimeout(()=>inp.focus(),150);
+  }
+}
+
+function norm(s){
+  return s.toLowerCase()
+    .normalize("NFD").replace(/[̀-ͯ]/g,"")
+    .replace(/[.,!¡¿?]/g," ")
+    .replace(/\s+/g," ").trim();
+}
+
+function checkText(q){
+  if(locked) return;
+  const raw=norm($("inp").value);
+  if(!raw) return;
+  const given=raw.split(" ").join("|");           // "es es" -> "es|es"
+  const ok=q.acc.some(a=>a===given || a.split("|").join(" ")===raw);
+  locked=true;
+  const f=$("feedback");
+  if(ok){
+    score+=POINTS[3]; hits[3]++;
+    $("score").textContent=score;
+    f.textContent="¡Muy bien! +20"; f.className="feedback show good";
+    $("inp").style.borderColor="var(--verde)";
+  } else {
+    f.innerHTML="Fast! Richtig ist:<br>«"+q.sol+"»";
+    f.className="feedback show bad";
+    $("inp").style.borderColor="var(--rojo)";
+  }
+  $("nextBtn").classList.remove("hidden");
+}
+
+function check(btn, ok, sol){
+  if(locked) return;
+  locked=true;
+  const f=$("feedback");
+  document.querySelectorAll("#answers .btn").forEach(b=>{ if(b!==btn) b.classList.add("dim"); });
+  if(ok){
+    btn.classList.add("ok");
+    score+=POINTS[level]; hits[level]++;
+    $("score").textContent=score;
+    f.textContent="¡Muy bien! +"+POINTS[level];
+    f.className="feedback show good";
+    setTimeout(nextQ, level===1?1300:900);
+  } else {
+    btn.classList.add("bad");
+    const correct = level===1 ? L1[idx].a : L2[idx].a;
+    document.querySelectorAll("#answers .btn").forEach(b=>{
+      if(b.textContent===correct){b.classList.add("ok");b.classList.remove("dim");}
+    });
+    f.innerHTML="Richtig: «"+sol+"»";
+    f.className="feedback show bad";
+    $("nextBtn").classList.remove("hidden");
+  }
+}
+
+function nextQ(){
+  idx++;
+  const data={1:L1,2:L2,3:L3}[level];
+  if(idx>=data.length){
+    if(level<3){level++; idx=0; render();}
+    else finish();
+  } else render();
+}
+
+function finish(){
+  $("game").classList.add("hidden");
+  $("end").classList.remove("hidden");
+  $("endScore").textContent=score+" / "+MAX;
+  const pctAll=score/MAX;
+  $("endEmoji").textContent=pctAll>=.75?"🎉":pctAll>=.5?"💪":"📚";
+  $("endTitle").textContent=pctAll>=.75?"¡Fenomenal!":pctAll>=.5?"¡Bien!":"¡Sigue así!";
+
+  const names={1:"ser oder estar erkennen",2:"die richtige Form wählen",3:"Lückentext wie in der Klausur"};
+  const R=$("results"); R.innerHTML="";
+  [1,2,3].forEach(lv=>{
+    const pct=Math.round(hits[lv]/TOTAL[lv]*100);
+    const can=pct>=75;
+    const div=document.createElement("div");
+    div.className="result-bar";
+    div.innerHTML=`<span class="tag ${can?'can':'train'}">${can?'Das kannst du schon':'Das übst du noch'}</span>
+      <b>Level ${lv} · ${names[lv]}</b>
+      <div class="track"><div class="fill" style="background:${can?'var(--verde)':'var(--rojo)'}"></div></div>`;
+    R.appendChild(div);
+    setTimeout(()=>{div.querySelector(".fill").style.width=pct+"%"},100);
+  });
+}
+</script>
+</body>
+</html>
