@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>La ropa – Unidad 3</title>
+<style>
+  :root{
+    --bg:#F5F5F7; --card:#FFFFFF; --ink:#1D1D1F; --ink2:#6E6E73;
+    --verde:#34C759; --verde-soft:#E8F9EE;
+    --rojo:#FF3B30; --rojo-soft:#FFECEB;
+    --azul:#0071E3; --azul-soft:#EAF3FD;
+    --indigo:#5856D6; --indigo-soft:#EEEDFB;
+    --pink:#FF2D55; --pink-soft:#FFE8EC; --pink-ink:#C2103A;
+    --radius:20px;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{height:100%}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:var(--bg); color:var(--ink);
+    display:flex; flex-direction:column; align-items:center;
+    min-height:100dvh; padding:16px;
+  }
+  .app{width:100%; max-width:440px; display:flex; flex-direction:column; gap:14px; flex:1}
+
+  header{display:flex; justify-content:space-between; align-items:center; padding:4px 2px}
+  .level-pill{background:var(--card); border-radius:999px; padding:8px 16px; font-size:15px; font-weight:600; box-shadow:0 1px 3px rgba(0,0,0,.06)}
+  .score{font-size:17px; font-weight:700; font-variant-numeric:tabular-nums}
+  .score span{color:var(--ink2); font-weight:500; font-size:13px}
+  .progress{height:6px; background:#E5E5EA; border-radius:3px; overflow:hidden}
+  .progress i{display:block; height:100%; width:0%; background:var(--pink); border-radius:3px; transition:width .35s ease}
+
+  .card{
+    background:var(--card); border-radius:var(--radius);
+    box-shadow:0 2px 12px rgba(0,0,0,.06);
+    padding:24px 20px; text-align:center;
+  }
+  .task-label{font-size:13px; color:var(--ink2); margin-bottom:10px}
+  .stimulus{font-size:54px; line-height:1.15; margin:4px 0}
+  .stimulus small{display:block; font-size:17px; font-weight:700; margin-top:6px; color:var(--ink2)}
+  .sentence{font-size:21px; font-weight:600; line-height:1.5; margin:8px 0}
+  .sentence .gap{display:inline-block; min-width:76px; border-bottom:2.5px solid var(--pink); color:var(--pink-ink); padding:0 4px}
+  .sentence .em{font-size:1.15em}
+
+  .answers{display:flex; flex-direction:column; gap:10px}
+  .answers.row{flex-direction:row}
+  .answers.row .btn{flex:1}
+  .btn{
+    min-height:54px; border:none; border-radius:16px;
+    background:var(--card); color:var(--ink);
+    font-family:inherit; font-size:18px; font-weight:700;
+    box-shadow:0 1px 4px rgba(0,0,0,.07);
+    padding:12px 14px; cursor:pointer;
+    transition:transform .12s ease, background .2s, color .2s;
+  }
+  .btn:active{transform:scale(.97)}
+  .btn.ok{background:var(--verde); color:#fff}
+  .btn.bad{background:var(--rojo); color:#fff}
+  .btn.dim{opacity:.45}
+
+  .btn-primary{
+    min-height:54px; border:none; border-radius:999px;
+    background:var(--azul); color:#fff; font-family:inherit;
+    font-size:18px; font-weight:700; padding:14px 28px; cursor:pointer;
+    transition:transform .12s ease;
+  }
+  .btn-primary:active{transform:scale(.97)}
+
+  input[type=text]{
+    width:100%; min-height:54px; border-radius:16px; border:1.5px solid #D2D2D7;
+    font-family:inherit; font-size:18px; padding:12px 16px; text-align:center;
+    background:var(--card); color:var(--ink); outline:none;
+  }
+  input[type=text]:focus{border-color:var(--azul); box-shadow:0 0 0 3px var(--azul-soft)}
+  .hint{font-size:13.5px; color:var(--ink2); margin-top:8px; line-height:1.4}
+  .hint b.m{color:var(--indigo)} .hint b.f{color:var(--pink-ink)}
+
+  .feedback{
+    min-height:52px; border-radius:16px; padding:12px 16px;
+    font-size:16px; font-weight:600; display:none; align-items:center; justify-content:center;
+    text-align:center; line-height:1.45;
+  }
+  .feedback.show{display:flex; animation:pop .3s ease}
+  .feedback.good{background:var(--verde-soft); color:#1B7A3D}
+  .feedback.bad{background:var(--rojo-soft); color:#B3261E}
+  @keyframes pop{from{transform:scale(.94);opacity:0} to{transform:scale(1);opacity:1}}
+  @media (prefers-reduced-motion:reduce){ .feedback.show{animation:none} }
+
+  .screen{flex:1; display:flex; flex-direction:column; justify-content:center; gap:16px; text-align:center; animation:pop .35s ease}
+  .screen h1{font-size:30px; font-weight:800; letter-spacing:-.5px}
+  .screen h1 em{font-style:normal; color:var(--pink)}
+  .screen p{font-size:17px; color:var(--ink2); line-height:1.5}
+  .lv-list{display:flex; flex-direction:column; gap:10px; text-align:left}
+  .lv-item{background:var(--card); border-radius:16px; padding:14px 16px; display:flex; gap:12px; align-items:center; box-shadow:0 1px 4px rgba(0,0,0,.06)}
+  .lv-item .n{width:34px; height:34px; border-radius:10px; background:var(--pink-soft); color:var(--pink-ink); font-weight:800; display:flex; align-items:center; justify-content:center; flex-shrink:0}
+  .lv-item div b{display:block; font-size:16px}
+  .lv-item div span{font-size:13.5px; color:var(--ink2)}
+
+  .result-bar{background:var(--card); border-radius:16px; padding:14px 16px; text-align:left; box-shadow:0 1px 4px rgba(0,0,0,.06)}
+  .result-bar b{font-size:15.5px}
+  .result-bar .track{height:8px; background:#E5E5EA; border-radius:4px; margin-top:8px; overflow:hidden}
+  .result-bar .fill{height:100%; border-radius:4px; width:0; transition:width .8s ease}
+  .tag{font-size:13px; font-weight:700; padding:3px 10px; border-radius:999px; float:right}
+  .tag.can{background:var(--verde-soft); color:#1B7A3D}
+  .tag.train{background:var(--rojo-soft); color:#B3261E}
+  .hidden{display:none !important}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- START -->
+  <section class="screen" id="start">
+    <div style="font-size:56px">👔👖</div>
+    <h1>La <em>ropa</em></h1>
+    <p>Kleidung &amp; Farben · Unidad 3<br>3 Levels · ca. 10 Minuten</p>
+    <div class="lv-list">
+      <div class="lv-item"><span class="n">1</span><div><b>Erkennen</b><span>Kleidungsstück mit el/la antippen</span></div></div>
+      <div class="lv-item"><span class="n">2</span><div><b>Anwenden</b><span>Artikel · Farben · ir bien con · de oferta</span></div></div>
+      <div class="lv-item"><span class="n">3</span><div><b>Schreiben</b><span>Wörter tippen – wie in der Klausur</span></div></div>
+    </div>
+    <button class="btn-primary" onclick="startGame()">Empezar</button>
+  </section>
+
+  <!-- SPIEL -->
+  <section id="game" class="hidden" style="display:flex;flex-direction:column;gap:14px;flex:1">
+    <header>
+      <span class="level-pill" id="levelPill">Level 1</span>
+      <span class="score"><span>Puntos&nbsp;</span><b id="score">0</b></span>
+    </header>
+    <div class="progress"><i id="bar"></i></div>
+
+    <div class="card" id="qcard">
+      <div class="task-label" id="taskLabel"></div>
+      <div id="qbody"></div>
+    </div>
+
+    <div class="answers" id="answers"></div>
+    <div class="feedback" id="feedback"></div>
+    <div style="text-align:center"><button class="btn-primary hidden" id="nextBtn" onclick="nextQ()">Weiter</button></div>
+  </section>
+
+  <!-- ENDE -->
+  <section class="screen hidden" id="end">
+    <div style="font-size:60px" id="endEmoji">🎉</div>
+    <h1 id="endTitle">¡Muy bien!</h1>
+    <p><b id="endScore" style="color:var(--ink);font-size:22px"></b> Punkte</p>
+    <div id="results" style="display:flex;flex-direction:column;gap:10px"></div>
+    <button class="btn-primary" onclick="location.reload()">Otra vez</button>
+  </section>
+</div>
+
+<script>
+/* ---------- Inhalte: Kleidung & Farben (Unidad 3) ---------- */
+
+// Level 1: Emoji + dt. Hinweis -> Wort MIT Artikel antippen (10 P.)
+const L1 = [
+  {e:"👕", de:"T-Shirt", a:"la camiseta", o:["la camiseta","el camiseta","la camisa"]},
+  {e:"👔", de:"Hemd", a:"la camisa", o:["el camisa","la camisa","la camiseta"]},
+  {e:"👖", de:"Hose", a:"el pantalón", o:["el pantalón","la pantalón","los zapatos"]},
+  {e:"🧥", de:"Jacke", a:"la chaqueta", o:["el chaqueta","la chaqueta","la falda"]},
+  {e:"👗", de:"Kleid", a:"el vestido", o:["la vestido","el vestido","la falda"]},
+  {e:"👞", de:"Schuhe", a:"los zapatos", o:["los zapatos","las zapatos","los vaqueros"]},
+  {e:"👖", de:"Jeans", a:"los vaqueros", o:["las vaqueras","el vaquero","los vaqueros"]},
+  {e:"🩳", de:"Rock", a:"la falda", o:["la falda","el faldo","la chaqueta"]},
+];
+
+// Level 2: Lücken – Artikel, Farbangleichung, Ausdrücke (10 P.)
+const L2 = [
+  {s:["", " camisa es muy elegante. 👔"], a:"La", o:["El","La","Los"]},
+  {s:["un pantalón ", " 🖤"], a:"negro", o:["negro","negra","negros"]},
+  {s:["una chaqueta ", " 🤍"], a:"blanca", o:["blanco","blanca","blancas"]},
+  {s:["¿Cuánto cuestan ", " zapatos? 👞"], a:"los", o:["el","la","los"]},
+  {s:["unos vaqueros ", " 💙"], a:"azules", o:["azul","azules","azulos"]},
+  {s:["Solo cuesta 10 euros. ¡Está de ", "! 🏷️"], a:"oferta", o:["oferta","talla","calidad"]},
+  {s:["La camisa blanca va bien ", " el pantalón gris."], a:"con", o:["con","de","en"]},
+  {s:["una falda ", " 🤎"], a:"marrón", o:["marrón","marrona","marrones"]},
+];
+const L2SOL = [
+  "La camisa es muy elegante.",
+  "un pantalón negro",
+  "una chaqueta blanca",
+  "¿Cuánto cuestan los zapatos?",
+  "unos vaqueros azules",
+  "¡Está de oferta! (= im Angebot)",
+  "La camisa blanca va bien con el pantalón gris.",
+  "una falda marrón (marrón bleibt gleich!)",
+];
+
+// Level 3: Wort MIT Artikel tippen – Klausurformat „Prendas" (20 P.)
+const L3 = [
+  {e:"👕", de:"T-Shirt", sol:"la camiseta", acc:["la camiseta"]},
+  {e:"👖", de:"Hose", sol:"el pantalón", acc:["el pantalon","los pantalones"]},
+  {e:"👞", de:"Schuhe", sol:"los zapatos", acc:["los zapatos"]},
+  {e:"👔", de:"Hemd", sol:"la camisa", acc:["la camisa"]},
+  {e:"👗", de:"Kleid", sol:"el vestido", acc:["el vestido"]},
+];
+
+/* ---------- Logik ---------- */
+let level=1, idx=0, score=0, locked=false;
+let hits={1:0,2:0,3:0};
+const POINTS={1:10,2:10,3:20};
+const TOTAL={1:L1.length,2:L2.length,3:L3.length};
+const MAX=TOTAL[1]*10+TOTAL[2]*10+TOTAL[3]*20;
+
+const $=id=>document.getElementById(id);
+function shuffle(arr){return [...arr].sort(()=>Math.random()-.5)}
+
+function startGame(){
+  $("start").classList.add("hidden");
+  $("game").classList.remove("hidden");
+  render();
+}
+
+function render(){
+  locked=false;
+  $("feedback").className="feedback";
+  $("nextBtn").classList.add("hidden");
+  $("levelPill").textContent="Level "+level;
+  const done = idx + (level>1?TOTAL[1]:0) + (level>2?TOTAL[2]:0);
+  const all = TOTAL[1]+TOTAL[2]+TOTAL[3];
+  $("bar").style.width=(done/all*100)+"%";
+
+  const A=$("answers"), B=$("qbody");
+  A.innerHTML=""; B.innerHTML=""; A.className="answers";
+
+  if(level===1){
+    const q=L1[idx];
+    $("taskLabel").textContent="Wie heißt das Kleidungsstück? Achte auf el/la!";
+    B.innerHTML=`<div class="stimulus">${q.e}<small>${q.de}</small></div>`;
+    shuffle(q.o).forEach(opt=>{
+      const b=document.createElement("button");
+      b.className="btn"; b.textContent=opt;
+      b.onclick=()=>check(b, opt===q.a, q.a);
+      A.appendChild(b);
+    });
+  }
+
+  if(level===2){
+    const q=L2[idx];
+    $("taskLabel").textContent="Was passt in die Lücke?";
+    B.innerHTML=`<div class="sentence"><span class="em">${q.s[0]}</span><span class="gap">…</span><span class="em">${q.s[1]}</span></div>`;
+    A.className="answers row";
+    shuffle(q.o).forEach(opt=>{
+      const b=document.createElement("button");
+      b.className="btn"; b.textContent=opt;
+      b.onclick=()=>check(b, opt===q.a, L2SOL[idx]);
+      A.appendChild(b);
+    });
+  }
+
+  if(level===3){
+    const q=L3[idx];
+    $("taskLabel").textContent="Schreibe das Wort mit Artikel";
+    B.innerHTML=`<div class="stimulus">${q.e}<small>${q.de}</small></div>
+      <input type="text" id="inp" autocomplete="off" autocapitalize="off" placeholder="el / la / los … + Wort" enterkeyhint="done">
+      <div class="hint"><b class="m">el · los</b> oder <b class="f">la · las</b> nicht vergessen!</div>`;
+    const b=document.createElement("button");
+    b.className="btn-primary"; b.textContent="Comprobar"; b.style.width="100%";
+    b.onclick=()=>checkText(q);
+    A.appendChild(b);
+    const inp=$("inp");
+    inp.addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();checkText(q);}});
+    setTimeout(()=>inp.focus(),150);
+  }
+}
+
+function norm(s){
+  return s.toLowerCase()
+    .normalize("NFD").replace(/[̀-ͯ]/g,"")
+    .replace(/[.,!¡¿?]/g," ")
+    .replace(/\s+/g," ").trim();
+}
+
+function checkText(q){
+  if(locked) return;
+  const val=norm($("inp").value);
+  if(!val) return;
+  const ok=q.acc.some(a=>norm(a)===val);
+  locked=true;
+  const f=$("feedback");
+  if(ok){
+    score+=POINTS[3]; hits[3]++;
+    $("score").textContent=score;
+    f.textContent="¡Muy bien! +20"; f.className="feedback show good";
+    $("inp").style.borderColor="var(--verde)";
+  } else {
+    f.innerHTML="Fast! Richtig ist:<br>«"+q.sol+"»";
+    f.className="feedback show bad";
+    $("inp").style.borderColor="var(--rojo)";
+  }
+  $("nextBtn").classList.remove("hidden");
+}
+
+function check(btn, ok, sol){
+  if(locked) return;
+  locked=true;
+  const f=$("feedback");
+  document.querySelectorAll("#answers .btn").forEach(b=>{ if(b!==btn) b.classList.add("dim"); });
+  if(ok){
+    btn.classList.add("ok");
+    score+=POINTS[level]; hits[level]++;
+    $("score").textContent=score;
+    f.textContent="¡Muy bien! +"+POINTS[level];
+    f.className="feedback show good";
+    setTimeout(nextQ, 900);
+  } else {
+    btn.classList.add("bad");
+    const correct = level===1 ? L1[idx].a : L2[idx].a;
+    document.querySelectorAll("#answers .btn").forEach(b=>{
+      if(b.textContent===correct){b.classList.add("ok");b.classList.remove("dim");}
+    });
+    f.innerHTML="Richtig: «"+sol+"»";
+    f.className="feedback show bad";
+    $("nextBtn").classList.remove("hidden");
+  }
+}
+
+function nextQ(){
+  idx++;
+  const data={1:L1,2:L2,3:L3}[level];
+  if(idx>=data.length){
+    if(level<3){level++; idx=0; render();}
+    else finish();
+  } else render();
+}
+
+function finish(){
+  $("game").classList.add("hidden");
+  $("end").classList.remove("hidden");
+  $("endScore").textContent=score+" / "+MAX;
+  const pctAll=score/MAX;
+  $("endEmoji").textContent=pctAll>=.75?"🎉":pctAll>=.5?"💪":"📚";
+  $("endTitle").textContent=pctAll>=.75?"¡Fenomenal!":pctAll>=.5?"¡Bien!":"¡Sigue así!";
+
+  const names={1:"Kleidung mit el/la erkennen",2:"Artikel, Farben & Ausdrücke",3:"Wörter schreiben (Klausurformat)"};
+  const R=$("results"); R.innerHTML="";
+  [1,2,3].forEach(lv=>{
+    const pct=Math.round(hits[lv]/TOTAL[lv]*100);
+    const can=pct>=75;
+    const div=document.createElement("div");
+    div.className="result-bar";
+    div.innerHTML=`<span class="tag ${can?'can':'train'}">${can?'Das kannst du schon':'Das übst du noch'}</span>
+      <b>Level ${lv} · ${names[lv]}</b>
+      <div class="track"><div class="fill" style="background:${can?'var(--verde)':'var(--rojo)'}"></div></div>`;
+    R.appendChild(div);
+    setTimeout(()=>{div.querySelector(".fill").style.width=pct+"%"},100);
+  });
+}
+</script>
+</body>
+</html>
