@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>¡El gran quiz! – Unidad 3</title>
+<style>
+  :root{
+    --bg:#F5F5F7; --card:#FFFFFF; --ink:#1D1D1F; --ink2:#6E6E73;
+    --verde:#34C759; --verde-soft:#E8F9EE;
+    --rojo:#FF3B30; --rojo-soft:#FFECEB;
+    --azul:#0071E3; --azul-soft:#EAF3FD;
+    --naranja:#FF9500; --naranja-soft:#FFF3E5; --naranja-ink:#B36A00;
+    --amar:#FFCC00; --amar-soft:#FFF6D9; --amar-ink:#8A6D00;
+    --viol:#AF52DE; --viol-soft:#F5E9FC; --viol-ink:#7B2FA3;
+    --radius:20px;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{height:100%}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:var(--bg); color:var(--ink);
+    display:flex; flex-direction:column; align-items:center;
+    min-height:100dvh; padding:16px;
+  }
+  .app{width:100%; max-width:440px; display:flex; flex-direction:column; gap:14px; flex:1}
+
+  header{display:flex; justify-content:space-between; align-items:center; padding:4px 2px}
+  .level-pill{background:var(--card); border-radius:999px; padding:8px 16px; font-size:14.5px; font-weight:700; box-shadow:0 1px 3px rgba(0,0,0,.06)}
+  .score{font-size:17px; font-weight:700; font-variant-numeric:tabular-nums}
+  .score span{color:var(--ink2); font-weight:500; font-size:13px}
+  .progress{height:6px; background:#E5E5EA; border-radius:3px; overflow:hidden}
+  .progress i{display:block; height:100%; width:0%; background:var(--amar); border-radius:3px; transition:width .35s ease}
+
+  .card{
+    background:var(--card); border-radius:var(--radius);
+    box-shadow:0 2px 12px rgba(0,0,0,.06);
+    padding:22px 20px; text-align:center;
+  }
+  .task-label{font-size:13px; color:var(--ink2); margin-bottom:10px}
+  .sentence{font-size:21px; font-weight:600; line-height:1.55; margin:8px 0}
+  .sentence .gap{display:inline-block; min-width:66px; border-bottom:2.5px solid var(--amar); color:var(--amar-ink); padding:0 4px}
+  .sentence .inf{color:var(--ink2); font-weight:700}
+  .cue{
+    background:var(--naranja-soft); color:var(--naranja-ink);
+    border-radius:16px; padding:12px 14px; font-size:17px; font-weight:800; line-height:1.45; text-align:left;
+  }
+  .cue .who{display:block; font-size:12px; font-weight:600; color:var(--ink2); margin-bottom:2px}
+
+  .answers{display:flex; flex-direction:column; gap:10px}
+  .answers.row{flex-direction:row; flex-wrap:wrap}
+  .answers.row .btn{flex:1 1 28%}
+  .btn{
+    min-height:54px; border:none; border-radius:16px;
+    background:var(--card); color:var(--ink);
+    font-family:inherit; font-size:18px; font-weight:700;
+    box-shadow:0 1px 4px rgba(0,0,0,.07);
+    padding:12px 14px; cursor:pointer; line-height:1.35;
+    transition:transform .12s ease, background .2s, color .2s;
+  }
+  .btn:active{transform:scale(.97)}
+  .btn.ok{background:var(--verde); color:#fff}
+  .btn.bad{background:var(--rojo); color:#fff}
+  .btn.dim{opacity:.45}
+
+  .btn-primary{
+    min-height:54px; border:none; border-radius:999px;
+    background:var(--azul); color:#fff; font-family:inherit;
+    font-size:18px; font-weight:700; padding:14px 28px; cursor:pointer;
+    transition:transform .12s ease;
+  }
+  .btn-primary:active{transform:scale(.97)}
+
+  input[type=text]{
+    width:100%; min-height:54px; border-radius:16px; border:1.5px solid #D2D2D7;
+    font-family:inherit; font-size:18px; padding:12px 16px; text-align:center;
+    background:var(--card); color:var(--ink); outline:none;
+  }
+  input[type=text]:focus{border-color:var(--azul); box-shadow:0 0 0 3px var(--azul-soft)}
+  .hint{font-size:13.5px; color:var(--ink2); margin-top:8px; line-height:1.4}
+
+  .feedback{
+    min-height:52px; border-radius:16px; padding:12px 16px;
+    font-size:16px; font-weight:600; display:none; align-items:center; justify-content:center;
+    text-align:center; line-height:1.45;
+  }
+  .feedback.show{display:flex; animation:pop .3s ease}
+  .feedback.good{background:var(--verde-soft); color:#1B7A3D}
+  .feedback.bad{background:var(--rojo-soft); color:#B3261E}
+  @keyframes pop{from{transform:scale(.94);opacity:0} to{transform:scale(1);opacity:1}}
+  @media (prefers-reduced-motion:reduce){ .feedback.show{animation:none} }
+
+  .screen{flex:1; display:flex; flex-direction:column; justify-content:center; gap:15px; text-align:center; animation:pop .35s ease}
+  .screen h1{font-size:29px; font-weight:800; letter-spacing:-.5px}
+  .screen h1 em{font-style:normal; color:var(--amar-ink); background:var(--amar); border-radius:10px; padding:0 10px}
+  .screen p{font-size:16.5px; color:var(--ink2); line-height:1.5}
+  .lv-list{display:flex; flex-direction:column; gap:9px; text-align:left}
+  .lv-item{background:var(--card); border-radius:16px; padding:12px 15px; display:flex; gap:12px; align-items:center; box-shadow:0 1px 4px rgba(0,0,0,.06)}
+  .lv-item .n{width:32px; height:32px; border-radius:10px; background:var(--amar-soft); color:var(--amar-ink); font-weight:800; display:flex; align-items:center; justify-content:center; flex-shrink:0}
+  .lv-item div b{display:block; font-size:15.5px}
+  .lv-item div span{font-size:13px; color:var(--ink2)}
+
+  .result-bar{background:var(--card); border-radius:16px; padding:13px 16px; text-align:left; box-shadow:0 1px 4px rgba(0,0,0,.06)}
+  .result-bar b{font-size:15px}
+  .result-bar .track{height:8px; background:#E5E5EA; border-radius:4px; margin-top:8px; overflow:hidden}
+  .result-bar .fill{height:100%; border-radius:4px; width:0; transition:width .8s ease}
+  .tag{font-size:12.5px; font-weight:700; padding:3px 10px; border-radius:999px; float:right}
+  .tag.can{background:var(--verde-soft); color:#1B7A3D}
+  .tag.train{background:var(--rojo-soft); color:#B3261E}
+  .hidden{display:none !important}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- START -->
+  <section class="screen" id="start">
+    <div style="font-size:54px">🏆</div>
+    <h1>¡El gran <em>quiz</em>!</h1>
+    <p>Alle Klausurthemen · Unidad 3<br>4 Runden · ca. 12 Minuten</p>
+    <div class="lv-list">
+      <div class="lv-item"><span class="n">1</span><div><b>Ronda gustar ❤️</b><span>Pronomen &amp; gusta/gustan</span></div></div>
+      <div class="lv-item"><span class="n">2</span><div><b>Ronda estar + gerundio ⏰</b><span>Formen, Endungen – und das a!</span></div></div>
+      <div class="lv-item"><span class="n">3</span><div><b>Ronda ser · estar · hay ⚖️</b><span>wie im Klausur-Lückentext</span></div></div>
+      <div class="lv-item"><span class="n">4</span><div><b>Finale 🏁</b><span>Mediación &amp; E-Mail-Sätze tippen</span></div></div>
+    </div>
+    <button class="btn-primary" onclick="startGame()">Empezar</button>
+  </section>
+
+  <!-- SPIEL -->
+  <section id="game" class="hidden" style="display:flex;flex-direction:column;gap:14px;flex:1">
+    <header>
+      <span class="level-pill" id="levelPill">Ronda 1</span>
+      <span class="score"><span>Puntos&nbsp;</span><b id="score">0</b></span>
+    </header>
+    <div class="progress"><i id="bar"></i></div>
+
+    <div class="card" id="qcard">
+      <div class="task-label" id="taskLabel"></div>
+      <div id="qbody"></div>
+    </div>
+
+    <div class="answers" id="answers"></div>
+    <div class="feedback" id="feedback"></div>
+    <div style="text-align:center"><button class="btn-primary hidden" id="nextBtn" onclick="nextQ()">Weiter</button></div>
+  </section>
+
+  <!-- ENDE -->
+  <section class="screen hidden" id="end">
+    <div style="font-size:60px" id="endEmoji">🎉</div>
+    <h1 id="endTitle">¡Muy bien!</h1>
+    <p><b id="endScore" style="color:var(--ink);font-size:22px"></b> Punkte</p>
+    <div id="results" style="display:flex;flex-direction:column;gap:9px"></div>
+    <button class="btn-primary" onclick="location.reload()">Otra vez</button>
+  </section>
+</div>
+
+<script>
+/* ---------- Inhalte: alle Klausurthemen (eigene Sätze) ---------- */
+
+// Ronda 1 · gustar (10 P.)
+const R1 = [
+  {s:["A nosotros ", " gusta ir al cine. 🎬"], a:"nos", o:["nos","os","les"]},
+  {s:["¿A ti ", " gustan los conciertos? 🎤"], a:"te", o:["te","le","me"]},
+  {s:["A mis padres ", " gusta viajar. ✈️"], a:"les", o:["le","les","nos"]},
+  {s:["Me ", " los videojuegos. 🎮"], a:"gustan", o:["gusta","gustan"]},
+  {s:["A Lena le ", " bailar. 💃"], a:"gusta", o:["gusta","gustan"]},
+  {s:["A vosotros os ", " las camisetas negras. 👕"], a:"gustan", o:["gusta","gustan"]},
+];
+const R1SOL=[
+  "A nosotros nos gusta ir al cine.",
+  "¿A ti te gustan los conciertos?",
+  "A mis padres les gusta viajar.",
+  "Me gustan los videojuegos. (Plural!)",
+  "A Lena le gusta bailar. (Infinitiv → gusta)",
+  "A vosotros os gustan las camisetas negras.",
+];
+
+// Ronda 2 · estar + gerundio (10 P.)
+const R2 = [
+  {s:["Yo ", " escuchando música. 🎧"], a:"estoy", o:["estoy","estás","está"]},
+  {s:["Nosotros estamos ", " "], inf:"(comer) 🍽️", a:"comiendo", o:["comiendo","comando","comendo"]},
+  {s:["Está ", " un libro. "], inf:"(leer) 📚", a:"leyendo", o:["leyendo","leendo","leiendo"]},
+  {s:["Mis amigos ", " jugando con videojuegos. 🎮"], a:"están", o:["está","estamos","están"]},
+  {s:["Marta está buscando ", " su hermano. 🔎"], a:"a", o:["a","– (nichts)","de"]},
+  {s:["¿Qué ", " haciendo vosotros? 📱"], a:"estáis", o:["estáis","estamos","están"]},
+];
+const R2SOL=[
+  "Yo estoy escuchando música.",
+  "Nosotros estamos comiendo.",
+  "Está leyendo un libro. (¡Ojo! leer → leyendo)",
+  "Mis amigos están jugando con videojuegos.",
+  "Marta está buscando a su hermano. (Person → a!)",
+  "¿Qué estáis haciendo vosotros?",
+];
+
+// Ronda 3 · ser / estar / hay (10 P.)
+const R3 = [
+  {s:["Lucía ", " de Madrid. 🌍"], a:"es", o:["es","está","hay"]},
+  {s:["Hoy (yo) ", " muy contenta. 😊"], a:"estoy", o:["soy","estoy","hay"]},
+  {s:["", " un parque cerca de mi casa. 🌳"], a:"Hay", o:["Es","Está","Hay"]},
+  {s:["El libro ", " aburrido. 📖"], a:"es", o:["es","está","hay"]},
+  {s:["Mis padres ", " en casa. 🏠"], a:"están", o:["son","están","hay"]},
+  {s:["Leo ", " alto y delgado. 📏"], a:"es", o:["es","está","hay"]},
+];
+const R3SOL=[
+  "Lucía es de Madrid. (Herkunft → ser)",
+  "Hoy estoy muy contenta. (Gefühl jetzt → estar)",
+  "Hay un parque cerca de mi casa. (es gibt → hay)",
+  "El libro es aburrido. (Eigenschaft → ser)",
+  "Mis padres están en casa. (Ort → estar)",
+  "Leo es alto y delgado. (Aussehen → ser)",
+];
+
+// Ronda 4 · Finale: Mediación (Emma in Madrid) & E-Mail – tippen (20 P.)
+const R4 = [
+  {who:"Emma 🇩🇪 · in der tienda", cue:"„Frag bitte, ob sie den Pullover in S haben!“",
+   sol:"¿Tiene el jersey en la talla S?",
+   acc:["tiene el jersey en la talla s","tiene el jersey en talla s","tienen el jersey en la talla s"]},
+  {who:"Emma 🇩🇪", cue:"„Was kostet die graue Jacke?“",
+   sol:"¿Cuánto cuesta la chaqueta gris?",
+   acc:["cuanto cuesta la chaqueta gris"]},
+  {who:"Emma 🇩🇪", cue:"„Die Jacke gefällt mir sehr!“ – Sag es der Verkäuferin!",
+   sol:"A mi prima le gusta mucho la chaqueta.",
+   acc:["a mi prima le gusta mucho la chaqueta","a emma le gusta mucho la chaqueta","le gusta mucho la chaqueta"]},
+  {who:"E-Mail ✉️ · Presentación", cue:"„Ich bin 17 (Jahre alt) und wohne in Köln.“",
+   sol:"Tengo 17 años y vivo en Colonia.",
+   acc:["tengo 17 anos y vivo en colonia","tengo diecisiete anos y vivo en colonia"]},
+  {who:"E-Mail ✉️ · Mi ropa", cue:"„Normalerweise trage ich blaue Jeans.“",
+   sol:"Normalmente llevo unos vaqueros azules.",
+   acc:["normalmente llevo unos vaqueros azules","normalmente llevo vaqueros azules"]},
+];
+
+/* ---------- Logik ---------- */
+const DATA={1:R1,2:R2,3:R3,4:R4};
+const SOLS={1:R1SOL,2:R2SOL,3:R3SOL};
+const NAMES={1:"Ronda 1 · gustar ❤️",2:"Ronda 2 · gerundio ⏰",3:"Ronda 3 · ser/estar/hay ⚖️",4:"Finale 🏁"};
+const POINTS={1:10,2:10,3:10,4:20};
+const TOTAL={1:R1.length,2:R2.length,3:R3.length,4:R4.length};
+const ALL=TOTAL[1]+TOTAL[2]+TOTAL[3]+TOTAL[4];
+const MAX=TOTAL[1]*10+TOTAL[2]*10+TOTAL[3]*10+TOTAL[4]*20;
+let level=1, idx=0, score=0, locked=false;
+let hits={1:0,2:0,3:0,4:0};
+
+const $=id=>document.getElementById(id);
+function shuffle(arr){return [...arr].sort(()=>Math.random()-.5)}
+
+function startGame(){
+  $("start").classList.add("hidden");
+  $("game").classList.remove("hidden");
+  render();
+}
+
+function render(){
+  locked=false;
+  $("feedback").className="feedback";
+  $("nextBtn").classList.add("hidden");
+  $("levelPill").textContent=NAMES[level];
+  let done=idx; for(let l=1;l<level;l++) done+=TOTAL[l];
+  $("bar").style.width=(done/ALL*100)+"%";
+
+  const A=$("answers"), B=$("qbody");
+  A.innerHTML=""; B.innerHTML=""; A.className="answers";
+
+  if(level<=3){
+    const q=DATA[level][idx];
+    $("taskLabel").textContent = level===1 ? "Was fehlt in der Lücke?"
+      : level===2 ? "estar-Form, gerundio oder a?" : "¿ser, estar o hay?";
+    const infHint = q.inf ? `<span class="inf">${q.inf}</span>` : "";
+    B.innerHTML=`<div class="sentence">${q.s[0]}<span class="gap">…</span>${infHint}${q.s[1]||""}</div>`;
+    A.className="answers row";
+    shuffle(q.o).forEach(opt=>{
+      const b=document.createElement("button");
+      b.className="btn"; b.textContent=opt;
+      b.onclick=()=>check(b, opt===q.a, SOLS[level][idx]);
+      A.appendChild(b);
+    });
+  }
+
+  if(level===4){
+    const q=R4[idx];
+    $("taskLabel").textContent="Tippe deinen Satz – sinngemäß zählt!";
+    B.innerHTML=`<div class="cue"><span class="who">${q.who}</span>${q.cue}</div>
+      <input type="text" id="inp" autocomplete="off" autocapitalize="off" placeholder="…" enterkeyhint="done" style="margin-top:12px">
+      <div class="hint">Akzente und Satzzeichen sind egal.</div>`;
+    const b=document.createElement("button");
+    b.className="btn-primary"; b.textContent="Comprobar"; b.style.width="100%";
+    b.onclick=()=>checkText(q);
+    A.appendChild(b);
+    const inp=$("inp");
+    inp.addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();checkText(q);}});
+    setTimeout(()=>inp.focus(),150);
+  }
+}
+
+function norm(s){
+  return s.toLowerCase()
+    .normalize("NFD").replace(/[̀-ͯ]/g,"")
+    .replace(/[.,:!¡¿?]/g," ")
+    .replace(/\s+/g," ").trim();
+}
+
+function checkText(q){
+  if(locked) return;
+  const val=norm($("inp").value);
+  if(!val) return;
+  const ok=q.acc.some(a=>norm(a)===val);
+  locked=true;
+  const f=$("feedback");
+  if(ok){
+    score+=POINTS[4]; hits[4]++;
+    $("score").textContent=score;
+    f.textContent="¡Muy bien! +20"; f.className="feedback show good";
+    $("inp").style.borderColor="var(--verde)";
+  } else {
+    f.innerHTML="Fast! Zum Beispiel:<br>«"+q.sol+"»";
+    f.className="feedback show bad";
+    $("inp").style.borderColor="var(--rojo)";
+  }
+  $("nextBtn").classList.remove("hidden");
+}
+
+function check(btn, ok, sol){
+  if(locked) return;
+  locked=true;
+  const f=$("feedback");
+  document.querySelectorAll("#answers .btn").forEach(b=>{ if(b!==btn) b.classList.add("dim"); });
+  if(ok){
+    btn.classList.add("ok");
+    score+=POINTS[level]; hits[level]++;
+    $("score").textContent=score;
+    f.textContent="¡Muy bien! +"+POINTS[level];
+    f.className="feedback show good";
+    setTimeout(nextQ, 900);
+  } else {
+    btn.classList.add("bad");
+    const correct=DATA[level][idx].a;
+    document.querySelectorAll("#answers .btn").forEach(b=>{
+      if(b.textContent===correct){b.classList.add("ok");b.classList.remove("dim");}
+    });
+    f.innerHTML="Richtig: «"+sol+"»";
+    f.className="feedback show bad";
+    $("nextBtn").classList.remove("hidden");
+  }
+}
+
+function nextQ(){
+  idx++;
+  if(idx>=TOTAL[level]){
+    if(level<4){level++; idx=0; render();}
+    else finish();
+  } else render();
+}
+
+function finish(){
+  $("game").classList.add("hidden");
+  $("end").classList.remove("hidden");
+  $("endScore").textContent=score+" / "+MAX;
+  const pctAll=score/MAX;
+  $("endEmoji").textContent=pctAll>=.75?"🏆":pctAll>=.5?"💪":"📚";
+  $("endTitle").textContent=pctAll>=.75?"¡Listo para la Klausur!":pctAll>=.5?"¡Casi!":"¡Sigue entrenando!";
+
+  const names={1:"gustar",2:"estar + gerundio (+ a)",3:"ser · estar · hay",4:"Mediación & E-Mail"};
+  const R=$("results"); R.innerHTML="";
+  [1,2,3,4].forEach(lv=>{
+    const pct=Math.round(hits[lv]/TOTAL[lv]*100);
+    const can=pct>=75;
+    const div=document.createElement("div");
+    div.className="result-bar";
+    div.innerHTML=`<span class="tag ${can?'can':'train'}">${can?'Das kannst du schon':'Das übst du noch'}</span>
+      <b>${names[lv]}</b>
+      <div class="track"><div class="fill" style="background:${can?'var(--verde)':'var(--rojo)'}"></div></div>`;
+    R.appendChild(div);
+    setTimeout(()=>{div.querySelector(".fill").style.width=pct+"%"},100);
+  });
+}
+</script>
+</body>
+</html>
